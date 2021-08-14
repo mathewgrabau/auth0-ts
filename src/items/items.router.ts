@@ -58,14 +58,14 @@ itemsRouter.post("/", async (request: Request, response: Response) => {
 
 // PUT items/:id
 
-itemsRouter.put("/:id", async(request: Request, response : Response) => {
+itemsRouter.put("/:id", async (request: Request, response: Response) => {
     // Parse the request item
     const id: number = parseInt(request.params.id, 10);
 
     try {
         // Get the payload
-        const itemUpdate : Item = request.body;
-        const existingItem : Item = await ItemService.find(id);
+        const itemUpdate: Item = request.body;
+        const existingItem: Item = await ItemService.find(id);
         if (existingItem) {
             const updatedItem = await ItemService.update(id, itemUpdate);
             return response.status(200).json(updatedItem);
@@ -80,3 +80,15 @@ itemsRouter.put("/:id", async(request: Request, response : Response) => {
 });
 
 // DELETE items/:id
+
+itemsRouter.delete("/:id", async (request: Request, response: Response) => {
+    // Parse the request item
+    const id: number = parseInt(request.params.id, 10);
+
+    try {
+        await ItemService.remove(id);
+        response.sendStatus(204);
+    } catch (e) {
+        response.status(500).send(e.message);
+    }
+});
