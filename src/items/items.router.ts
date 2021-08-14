@@ -3,7 +3,10 @@
  */
 import express, { Request, Response } from "express";
 import * as ItemService from "./items.service";
-import { BaseItem, Item } from "./item.interface"
+import { BaseItem, Item } from "./item.interface";
+
+// Verification support
+import { checkJwt } from "../middleware/authz.middleware";
 
 /**
  * Router Definition
@@ -42,6 +45,9 @@ itemsRouter.get("/:id", async (request: Request, response: Response) => {
         response.status(500).send(e.message);
     }
 });
+
+// At this point, we enable authorization middleware
+itemsRouter.use(checkJwt);
 
 // POST items
 
