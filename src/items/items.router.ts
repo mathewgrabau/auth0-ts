@@ -16,7 +16,18 @@ export const itemsRouter = express.Router();
 
 // GET item
 
+itemsRouter.get("/", async (request: Request, response : Response) =>{
+    try {
+        const items: Item[] = await ItemService.findAll();
+        response.status(200).send(items);
+    } catch (e) {
+        response.status(500).send(e.message);
+    }
+});
+
 // GET items/:id
+
+
 
 // POST items
 
