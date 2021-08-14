@@ -45,6 +45,17 @@ itemsRouter.get("/:id", async (request: Request, response: Response) => {
 
 // POST items
 
+itemsRouter.post("/", async (request: Request, response: Response) => {
+    try {
+        // Get the payload
+        const item : BaseItem = request.body;
+        const newItem = await ItemService.create(item);
+        response.status(201).json(newItem);
+    } catch (e) {
+        response.status(500).send(e.message);
+    }
+});
+
 // PUT items/:id
 
 // DELETE items/:id
