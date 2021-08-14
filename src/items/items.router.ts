@@ -16,7 +16,7 @@ export const itemsRouter = express.Router();
 
 // GET item
 
-itemsRouter.get("/", async (request: Request, response : Response) =>{
+itemsRouter.get("/", async (request: Request, response: Response) => {
     try {
         const items: Item[] = await ItemService.findAll();
         response.status(200).send(items);
@@ -27,7 +27,21 @@ itemsRouter.get("/", async (request: Request, response : Response) =>{
 
 // GET items/:id
 
+itemsRouter.get("/:id", async (request: Request, response: Response) => {
+    // Parse the request item
+    const id: number = parseInt(request.params.id, 10);
 
+    try {
+        const item : Item = await ItemService.find(id);
+        if (item) {
+            return response.status(200).send(item);
+        }
+
+        response.status(404).send("Item not found");
+    } catch (e) {
+        response.status(500).send(e.message);
+    }
+});
 
 // POST items
 
