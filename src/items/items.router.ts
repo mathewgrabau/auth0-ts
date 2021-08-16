@@ -7,6 +7,8 @@ import { BaseItem, Item } from "./item.interface";
 
 // Verification support
 import { checkJwt } from "../middleware/authz.middleware";
+import { checkPermissions } from "../middleware/permissions.middleware";
+import { ItemPermission } from "./item-permission";
 
 /**
  * Router Definition
@@ -47,48 +49,65 @@ itemsRouter.get("/:id", async (request: Request, response: Response) => {
 });
 
 // At this point, we enable authorization middleware
+// Otherwise, you need to include at the endpoint level.
+// Then, in the pipeline, adding the checkPermissions middleware
+// protects from authenticated requests that lack required access
+// level
 itemsRouter.use(checkJwt);
 
 // POST items
 
-itemsRouter.post("/", async (request: Request, response: Response) => {
-    try {
-        // Get the payload
-        const item : BaseItem = request.body;
-        const newItem = await ItemService.create(item);
-        response.status(201).json(newItem);
-    } catch (e) {
-        response.status(500).send(e.message);
-    }
-});
+itemsRouter.post(
+    "/",
+    checkPermissions(ItemPermission.CreateItems),
+    async (request: Request, response: Response) => {
+        console.log(request);
+        try {
+            // Get the payload
+            const item: BaseItem = request.body;
+            const newItem = await ItemService.create(item);
+            response.status(201).json(newItem);
+        } catch (e) {
+            response.status(500).send(e.message);
+        }
+    });
 
 // PUT items/:id
 
-itemsRouter.put("/:id", async (request: Request, response: Response) => {
-    // Parse the request item
-    const id: number = parseInt(request.params.id, 10);
+itemsRouter.put(
+    "/:id",
+    checkPermissions(ItemPermission.UpdateItems),
+    async (request: Request, response: Response) => {
+        console.log("Executing the request in PUT items/:id");
+        console.log(request);
 
-    try {
-        // Get the payload
-        const itemUpdate: Item = request.body;
-        const existingItem: Item = await ItemService.find(id);
-        if (existingItem) {
-            const updatedItem = await ItemService.update(id, itemUpdate);
-            return response.status(200).json(updatedItem);
+        // Parse the request item
+        const id: number = parseInt(request.params.id, 10);
+
+        try {
+            // Get the payload
+            const itemUpdate: Item = request.body;
+            const existingItem: Item = await ItemService.find(id);
+            if (existingItem) {
+                const updatedItem = await ItemService.update(id, itemUpdate);
+                return response.status(200).json(updatedItem);
+            }
+
+            // If it is not found, then create it.
+            const createdItem = await ItemService.create(itemUpdate);
+            response.status(201).json(createdItem);
+        } catch (e) {
+            response.status(500).send(e.message);
         }
-
-        // If it is not found, then create it.
-        const createdItem = await ItemService.create(itemUpdate);
-        response.status(201).json(createdItem);
-    } catch (e) {
-        response.status(500).send(e.message);
-    }
-});
+    });
 
 // DELETE items/:id
 
 itemsRouter.delete("/:id", async (request: Request, response: Response) => {
     // Parse the request item
+
+    console.log("Executing the request in PUT items/:id");
+    console.log(request);
     const id: number = parseInt(request.params.id, 10);
 
     try {
